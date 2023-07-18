@@ -1,5 +1,6 @@
 import re
 import os
+import shutil
 
 def dunderfy(s):
     return s.replace("_", "__").replace(" ","_")
@@ -16,3 +17,10 @@ def readlines(filename):
     with open(filename) as f:
         file_content = f.read().rstrip("\n")
     return file_content.split("\n")
+
+def writestr(s, target_path):
+    with open(target_path, "w") as f:
+        f.write(s)
+
+def write(source_path, target_path):
+    shutil.copy2(source_path, target_path)
