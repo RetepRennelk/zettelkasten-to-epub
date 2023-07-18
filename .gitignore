@@ -1,2 +1,5 @@
 Zettelkasten_to_EPUB.egg-info/
-z2e/src/__pycache__/main.cpython-37.pyc
+z2e/src/__pycache__/
+z2e/src/wikilinks.py
+z2e/__pycache__/
+z2e/tests/__pycache__/
