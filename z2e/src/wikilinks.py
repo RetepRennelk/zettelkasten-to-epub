@@ -39,9 +39,20 @@ class MD_File:
 
     def set_incoming_links(self, incoming_links):
         self.incoming_links = incoming_links
+        self.add_backlinks()
 
     def get_incoming_links(self):
         return self.incoming_links
+
+    def add_backlinks(self):
+        self.content.append("# Backlinks")
+        if len(self.incoming_links) == 0:
+            self.content.append('None')
+        else:
+            for link in self.incoming_links:
+                self.content.append(f'- [[{link.name}]]')
+
+
 class MD_Files:
     def __init__(self, folder_path):
         self.folder_path = folder_path
@@ -73,8 +84,13 @@ class MD_Files:
                 print("Link: ", link.name)
                 if md_filename not in self.incoming_links[link.name]:
                     self.incoming_links[link.name].append(md_file)
-        for name, md_files in self.incoming_links.items():
-            self.md_files[name].set_incoming_links(md_files)
+        # By going through all md_files, even those without incoming links,
+        # we ensure that a file without backlinks ends on
+        # "# Backlinks"
+        # "- None"
+        for name, md_file in self.md_files.items():
+            inc_links = self.get_incoming_links(name)
+            md_file.set_incoming_links(inc_links)
     
     def get_outgoing_links(self, md_name):
         md_file = self.md_files[md_name]
