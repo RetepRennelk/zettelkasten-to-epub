@@ -1,6 +1,11 @@
 import re
 import os
 import shutil
+from jinja2 import Template, Environment, PackageLoader, select_autoescape
+
+env = Environment(
+    loader=PackageLoader(__name__),
+    autoescape=select_autoescape())
 
 def dunderfy(s):
     return s.replace("_", "__").replace(" ","_")
@@ -25,9 +30,9 @@ def writestr(s, target_path):
 def write(source_path, target_path):
     shutil.copy2(source_path, target_path)
 
-def prepare_folder_structure(epub_filename, dir_names):
-    temp_directory = dir_names['temp_directory']
-    ops_dirname = dir_names['ops_dirname']
+def prepare_folder_structure(epub_filename, dirs):
+    temp_directory = dirs['temp']
+    ops_dirname = dirs['ops']
     if os.path.exists(epub_filename):
         os.remove(self.epub_filename)
     if os.path.exists(temp_directory):
@@ -41,3 +46,8 @@ def prepare_folder_structure(epub_filename, dir_names):
     for directory in directories:
         os.makedirs(directory)
     writestr("application/epub+zip", f'{temp_directory}/mimetype')
+
+def write_container_xml(dirs):
+    template = env.get_template("container.xml")
+    s = template.render(ops_dir=dirs['ops'])
+    writestr(s, f'{dirs["temp"]}/META-INF/container.xml')
