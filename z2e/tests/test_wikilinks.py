@@ -39,3 +39,13 @@ def test_id0_index():
 
     assert "ID1 Zettelkasten" in out_links
     assert "ID2 Mathematics" in out_links
+
+def test_md_files_incoming_links():
+    inc_links = md_files.get_incoming_links("ID0 Index")
+    assert len(inc_links) == 0
+    inc_links = md_files.get_incoming_links("ID1 Zettelkasten")
+    assert len(inc_links)==1
+    assert inc_links[0].name=="ID0 Index"
+    inc_links = md_files.get_incoming_links("ID2 Mathematics")
+    assert len(inc_links)==1
+    assert inc_links[0].name=="ID0 Index"
