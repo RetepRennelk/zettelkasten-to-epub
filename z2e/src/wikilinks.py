@@ -37,6 +37,11 @@ class MD_File:
     def get_outgoing_links(self):
         return self.outgoing_links
 
+    def set_incoming_links(self, incoming_links):
+        self.incoming_links = incoming_links
+
+    def get_incoming_links(self):
+        return self.incoming_links
 class MD_Files:
     def __init__(self, folder_path):
         self.folder_path = folder_path
@@ -68,6 +73,8 @@ class MD_Files:
                 print("Link: ", link.name)
                 if md_filename not in self.incoming_links[link.name]:
                     self.incoming_links[link.name].append(md_file)
+        for name, md_files in self.incoming_links.items():
+            self.md_files[name].set_incoming_links(md_files)
     
     def get_outgoing_links(self, md_name):
         md_file = self.md_files[md_name]
