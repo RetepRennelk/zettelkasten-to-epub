@@ -23,3 +23,19 @@ def test_md_files_outgoing_link():
 
     outlinks2 = md_files.get_outgoing_links("ID2 Mathematics")
     assert len(outlinks2)==0
+
+def test_id0_index():
+    id0_index = """# ID0 Index
+
+- [[ID1 Zettelkasten]]
+- [[ID2 Mathematics]]""".split('\n')
+    md_file = md_files.md_files['ID0 Index']
+
+    for x, y in zip(md_file.content, id0_index):
+        assert x==y
+
+    out_links = [x.name for x in md_file.get_outgoing_links()]
+    assert len(out_links) == 2
+
+    assert "ID1 Zettelkasten" in out_links
+    assert "ID2 Mathematics" in out_links
