@@ -4,6 +4,7 @@ import os
 from .helper import get_all_files, readlines
 import re
 from collections import defaultdict
+import sys
 
 class Wikilink:
     def __init__(self, embed, name, alias):
@@ -40,6 +41,9 @@ class MD_Files:
     def __init__(self, folder_path):
         self.folder_path = folder_path
         files = get_all_files(folder_path)
+        if len(files) == 0:
+            print(f"No MD-files found in directory '{folder_path}'.")
+            sys.exit(0)
         self.md_files = {}
         for file in files:
             path = f'{folder_path}/{file}'
