@@ -24,3 +24,20 @@ def writestr(s, target_path):
 
 def write(source_path, target_path):
     shutil.copy2(source_path, target_path)
+
+def prepare_folder_structure(epub_filename, dir_names):
+    temp_directory = dir_names['temp_directory']
+    ops_dirname = dir_names['ops_dirname']
+    if os.path.exists(epub_filename):
+        os.remove(self.epub_filename)
+    if os.path.exists(temp_directory):
+        shutil.rmtree(temp_directory)
+    directories = [
+        f'{temp_directory}/META-INF', 
+        f'{temp_directory}/{ops_dirname}',
+        f'{temp_directory}/{ops_dirname}/assets',
+        f'{temp_directory}/{ops_dirname}/xhtml',
+        f'{temp_directory}/{ops_dirname}/xhtml/css']
+    for directory in directories:
+        os.makedirs(directory)
+    writestr("application/epub+zip", f'{temp_directory}/mimetype')

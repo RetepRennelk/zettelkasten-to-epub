@@ -3,3 +3,4 @@ z2e/src/__pycache__/
 z2e/src/wikilinks.py
 z2e/__pycache__/
 z2e/tests/__pycache__/
+.epub/
