@@ -9,9 +9,11 @@ def test_backlinks1():
 
 - [[ID1 Zettelkasten]]
 - [[ID2 Mathematics]]
+- [[ID3 A note that doesn't exist]]
 # Backlinks
 None"""
     s = '\n'.join(md_files.md_files['ID0 Index'].content)
+    print(s)
     assert ref==s
 
 def test_backlinks2():
@@ -19,6 +21,7 @@ def test_backlinks2():
 # Backlinks
 - [[ID0 Index]]"""
     s = '\n'.join(md_files.md_files['ID1 Zettelkasten'].content)
+    print(s)
     assert ref==s
 
 def test_backlinks3():

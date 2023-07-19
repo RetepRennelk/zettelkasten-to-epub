@@ -51,3 +51,10 @@ def write_container_xml(dirs):
     template = env.get_template("container.xml")
     s = template.render(ops_dir=dirs['ops'])
     writestr(s, f'{dirs["temp"]}/META-INF/container.xml')
+
+def write_content_opf(md_files, dirs):
+    cache = {}
+    stack = ["ID0 Index"]
+    while len(stack) > 0:
+        head = stack.pop(0)
+        if head in cache: continue
