@@ -5,10 +5,14 @@ from z2e.src.wikilinks import MD_Files
 def main():
     epub_filename = 'test.epub'
     dirs = dict(
-        temp='./.epub', 
+        notes='Notes',
+        assets='Assets',
         ops='OPS',
-        notes='Notes')
+        temp='./.epub')
     prepare_folder_structure(epub_filename, dirs)
     write_container_xml(dirs)
-    md_files = MD_Files(dirs['notes'])
+    md_files = MD_Files(dirs)
     write_content_opf(md_files, dirs)
+
+if __name__ == '__main__':
+    main()

@@ -1,8 +1,8 @@
 from z2e.src.wikilinks import MD_Files
 from glob import glob
 
-folder_path = './Notes'
-md_files = MD_Files(folder_path)
+dirs = dict(notes='./Notes')
+md_files = MD_Files(dirs)
 
 def test_backlinks1():
     ref = """# ID0 Index

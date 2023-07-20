@@ -5,6 +5,7 @@ from .helper import get_all_files, readlines
 import re
 from collections import defaultdict
 import sys
+from pathlib import Path
 
 class Wikilink:
     def __init__(self, embed, name, alias):
@@ -56,9 +57,14 @@ class MD_File:
         else:
             for link in self.incoming_links:
                 self.content.append(f'- [[{link.name}]]')
+    
+    def get_content(self):
+        return self.content
 
 class MD_Files:
-    def __init__(self, folder_path):
+    def __init__(self, dirs):
+        self.dirs = dirs
+        folder_path = dirs['notes']
         self.folder_path = folder_path
         files = get_all_files(folder_path)
         if len(files) == 0:
@@ -71,8 +77,8 @@ class MD_Files:
             name, ext = os.path.splitext(file)
             if ext.lower() == '.md':
                 self.md_files[name] = MD_File(name, src_path)
-                self.scr_paths[name] = src_path
-                self.scr_paths[file] = src_path
+                self.scr_paths[name] = Path(src_path)
+                self.scr_paths[file] = Path(src_path)
             else:
                 print(f'Ignoring non-markdown file: {path}')
         self._make_outgoing_links()
@@ -101,7 +107,6 @@ class MD_Files:
             links = md_file.get_outgoing_links()
             for link in links:
                 if md_filename not in self.incoming_links[link.name]:
-                    print(link.name, md_file.name)
                     self.incoming_links[link.name].append(md_file)
         # By going through all md_files, even those without incoming links,
         # we ensure that a file without backlinks ends on
@@ -121,6 +126,10 @@ class MD_Files:
     def get_source_path(self, identifier):
         if identifier in self.scr_paths:
             return self.scr_paths[identifier]
+
+    def get_content(self, name):
+        if self.md_files[name].exists:
+            return self.md_files[name].get_content()
 
 if __name__ == '__main__':
     folder_path = 'Notes'
