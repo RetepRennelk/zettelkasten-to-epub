@@ -2,10 +2,19 @@ import re
 import os
 import shutil
 from jinja2 import Template, Environment, PackageLoader, select_autoescape
+from datetime import datetime
+import markdown
+from .wikilink import Wikilink
+from pathlib import Path
 
 env = Environment(
     loader=PackageLoader(__name__),
     autoescape=select_autoescape())
+md = markdown.Markdown()
+zettel_template = env.get_template("zettel.xhtml")
+epub_title = "PK's Zettelkasten"
+OPF_identifier = "1234567890"
+zettel_style_css = "./css/zettel_style.css"
 
 def dunderfy(s):
     return s.replace("_", "__").replace(" ","_")
@@ -34,7 +43,7 @@ def prepare_folder_structure(epub_filename, dirs):
     temp_directory = dirs['temp']
     ops_dirname = dirs['ops']
     if os.path.exists(epub_filename):
-        os.remove(self.epub_filename)
+        os.remove(epub_filename)
     if os.path.exists(temp_directory):
         shutil.rmtree(temp_directory)
     directories = [
@@ -52,9 +61,143 @@ def write_container_xml(dirs):
     s = template.render(ops_dir=dirs['ops'])
     writestr(s, f'{dirs["temp"]}/META-INF/container.xml')
 
-def write_content_opf(md_files, dirs):
-    cache = {}
-    stack = ["ID0 Index"]
+def write_content_opf(files, dirs):
+    cache = []
+    stack = [Wikilink(None, "ID0 Index", None)]
+    spine_flag = True
+    manifest_list = []
     while len(stack) > 0:
         head = stack.pop(0)
         if head in cache: continue
+        #src_path = md_files.get_source_path(head)
+        src_path = files.links.wikilink_to_path(head.name)
+        if src_path is None:
+            cache.append(head)
+            continue
+        if src_path.suffix == ".md":
+            target_dir = f'{dirs["temp"]}/{dirs["ops"]}/xhtml'
+            target_filename, manifest_svg_links, manifest_link = \
+                process_head(head.name, files, target_dir)
+            manifest_list.append(manifest_link)
+            manifest_list += manifest_svg_links
+            wikilinks = get_wikilinks(files, head.name) 
+            stack = wikilinks + stack
+            cache.append(head)
+            # gather_outgoing_links(head, wikilinks)
+        if spine_flag:
+            wikilinks = [head] + wikilinks
+            spine_list = make_spine(wikilinks)
+            manifest_link = make_nav(stack, dirs)
+            manifest_list.append(manifest_link)
+            manifest_link = write_toc_ncx(stack, dirs)
+            manifest_list.append(manifest_link)
+            spine_flag = False
+    manifest_link = write_zettel_style_css(dirs)
+    manifest_list.append(manifest_link)
+    manifest_list += store_assets(dirs)
+    manifest = '\n    '.join(manifest_list)
+    spine = '\n    '.join(spine_list)
+    date = datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+    template = env.get_template("content.opf")
+    f = f"./{dirs['temp']}/{dirs['ops']}/content.opf"
+    s = template.render(date=date,manifest=manifest,spine=spine,OPF_identifier=OPF_identifier)
+    writestr(s, f)
+
+def process_head(head, files, target_dir):
+    head_stub = dunderfy(head)
+    head_md = files.get_content(head)
+    head_xhtml, manifest_svg_links = md_to_xhtml(head_md, head, head_stub, files)
+    target_filename = store_xhtml(head_xhtml, head_stub, target_dir)
+    manifest_link = xhtml_to_manifest(head_stub)
+    return target_filename, manifest_svg_links, manifest_link
+
+def md_to_xhtml(head_md, head, head_stub, files):
+    """Syntax: md_to_xhtml(head_md)."""
+    pattern = re.compile("(!)*\\[\\[(.+?)(?:\\]\\]|\\|(.+?)\\]\\])")
+    xhtml_lst = []
+    for line in head_md:
+        idx = 0
+        lst = []
+        for match in pattern.finditer(line):
+            span = match.span()
+            lst.append(line[idx:span[0]])
+            if match.group(1) == "!": 
+                assert False, "Implement embedding"
+            link = wikilink_to_link(files, match.group(2))
+            lst.append(link)
+            idx=span[1]
+        lst.append(line[idx:])
+        xhtml_lst.append(''.join(lst))
+    # TODO xhtml_lst, manifest_png_links = math_to_png(xhtml_lst)
+    manifest_png_links = []
+    xhtml = md.convert('\n'.join(xhtml_lst))
+    return zettel_template.render(
+        title=head, head_stub=head_stub, body=xhtml,
+        zettel_style_css="./css/zettel_style.css"), manifest_png_links
+
+def wikilink_to_link(files, name):
+    res = files.links.wikilink_to_link(name)
+    return res
+
+def store_xhtml(head_xhtml, head_stub, target_dir):
+    target_filename = f"{target_dir}/{head_stub}.xhtml"
+    writestr(head_xhtml, target_filename)
+    return target_filename
+
+def xhtml_to_manifest(head_stub):
+    s = f'<item id="{head_stub}" href="xhtml/{head_stub}.xhtml" media-type="application/xhtml+xml"/>'
+    return s
+
+def get_wikilinks(files, head):
+    """Syntax: get_wikilinks(head_md)."""
+    wikilinks = files.get_wikilinks(head)
+    return wikilinks
+
+def make_spine(wikilinks):
+    spine_list = []
+    for wl in wikilinks:
+        wl = dunderfy(wl.name)
+        spine_list.append(f'<itemref idref="{wl}"/>')
+    return spine_list
+
+def make_nav(stack, dirs):
+    items = [[f"./xhtml/{dunderfy(el.name)}.xhtml", el.name] for el in stack]
+    template = env.get_template("nav.xhtml")
+    s = template.render(epub_title=epub_title, items=items)
+    writestr(s, f"./{dirs['temp']}/{dirs['ops']}/nav.xhtml")
+    manifest_link = f'<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>'
+    return manifest_link
+
+def write_toc_ncx(stack, dirs):
+    f = f"./{dirs['temp']}/{dirs['ops']}/toc.ncx"
+    template = env.get_template("toc.ncx")
+    items = [[f"./xhtml/{dunderfy(el.name)}.xhtml", el.name] for el in stack]
+    s = template.render(title="Table of contents",items=items,enumerate=enumerate,OPF_identifier=OPF_identifier)
+    writestr(s, f)
+    manifest_link = f'<item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>'
+    return manifest_link
+
+def write_zettel_style_css(dirs):
+    f = f"./{dirs['temp']}/{dirs['ops']}/xhtml/{zettel_style_css}"
+    template = env.get_template("zettel_style.css")
+    s = template.render()
+    writestr(s, f)
+    href = f"xhtml/{zettel_style_css}"
+    manifest_link = f'<item id="css" href="{href}" media-type="text/css"/>'
+    return manifest_link
+
+def store_assets(dirs):
+    manifest_links = []
+    exts = {".png":"png",".jpeg":"jpeg",".jpg":"jpeg"}
+    for root, _, files in os.walk(f'{dirs["assets"]}'):
+        for file in files:
+            source_path = Path(f'./{dirs["assets"]}/{file}')
+            target_path = Path(f'./{dirs["temp"]}/{dirs["ops"]}/{dirs["assets"]}/{dunderfy(file)}')
+            if source_path.suffix.lower() in ['.png','.jpg','jpeg']:
+                write(source_path, target_path)
+                id = dunderfy(file)
+                href = f'./{dirs["assets"]}/{dunderfy(file)}'
+                ext = exts[source_path.suffix.lower()]
+                link = f'<item id="{id}" href="{href}" media-type="image/{ext}"/>'
+                manifest_links.append(link)
+    return manifest_links
