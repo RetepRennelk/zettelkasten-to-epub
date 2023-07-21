@@ -12,7 +12,7 @@
     {{manifest}}
 </manifest>
 
-<spine toc="ncx">
+<spine toc="nav">
     {{spine}}
 </spine>
 

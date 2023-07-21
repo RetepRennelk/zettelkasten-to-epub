@@ -1,8 +1,10 @@
-from z2e.src.wikilinks import MD_Files
+from z2e.src.wikilinks import Files
 from glob import glob
 
-dirs = dict(notes='./Notes')
-md_files = MD_Files(dirs)
+dirs = dict(
+    notes='./Notes',
+    assets='./Assets')
+files = Files(dirs)
 
 def test_backlinks1():
     ref = """# ID0 Index
@@ -10,23 +12,24 @@ def test_backlinks1():
 - [[ID1 Zettelkasten]]
 - [[ID2 Mathematics]]
 - [[ID3 A note that doesn't exist]]
-# Backlinks
+## Backlinks
 None"""
-    s = '\n'.join(md_files.md_files['ID0 Index'].content)
-    print(s)
+    s = '\n'.join(files.get_content('ID0 Index'))
     assert ref==s
 
 def test_backlinks2():
-    ref = """# A Zettelkasten note
-# Backlinks
+    ref = """# ID1 Zettelkasten
+
+A Zettelkasten note
+## Backlinks
 - [[ID0 Index]]"""
-    s = '\n'.join(md_files.md_files['ID1 Zettelkasten'].content)
+    s = '\n'.join(files.get_content('ID1 Zettelkasten'))
     print(s)
     assert ref==s
 
 def test_backlinks3():
     ref = """# ID2 Mathematics
-# Backlinks
+## Backlinks
 - [[ID0 Index]]"""
-    s = '\n'.join(md_files.md_files['ID2 Mathematics'].content)
+    s = '\n'.join(files.get_content('ID2 Mathematics'))
     assert ref==s
