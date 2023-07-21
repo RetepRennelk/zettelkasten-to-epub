@@ -87,9 +87,7 @@ def write_content_opf(files, dirs):
         if spine_flag:
             wikilinks = [head] + wikilinks
             spine_list = make_spine(wikilinks)
-            manifest_link = make_nav(stack, dirs)
-            manifest_list.append(manifest_link)
-            manifest_link = write_toc_ncx(stack, dirs)
+            manifest_link = make_nav(wikilinks, dirs)
             manifest_list.append(manifest_link)
             spine_flag = False
     manifest_link = write_zettel_style_css(dirs)
@@ -166,15 +164,6 @@ def make_nav(stack, dirs):
     s = template.render(epub_title=epub_title, items=items)
     writestr(s, f"./{dirs['temp']}/{dirs['ops']}/nav.xhtml")
     manifest_link = f'<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>'
-    return manifest_link
-
-def write_toc_ncx(stack, dirs):
-    f = f"./{dirs['temp']}/{dirs['ops']}/toc.ncx"
-    template = env.get_template("toc.ncx")
-    items = [[f"./xhtml/{dunderfy(el.name)}.xhtml", el.name] for el in stack]
-    s = template.render(title="Table of contents",items=items,enumerate=enumerate,OPF_identifier=OPF_identifier)
-    writestr(s, f)
-    manifest_link = f'<item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>'
     return manifest_link
 
 def write_zettel_style_css(dirs):
