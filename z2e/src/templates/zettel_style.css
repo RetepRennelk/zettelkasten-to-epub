@@ -1,0 +1,13 @@
+.inline_image {
+    vertical-align: middle;
+    text-align: left;
+    display: inline;
+    float: none;
+    margin: 0;
+}
+
+p {
+    display: inline-block;
+    text-align: left;
+    float: none;
+}

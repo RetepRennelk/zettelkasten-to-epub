@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<package xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/" unique-identifier="db-id" version="3.0">
+
+<metadata>
+    <dc:title id="title">Peter's Zettelkasten</dc:title>
+    <dc:identifier id="db-id">{{ OPF_identifier }}</dc:identifier>
+    <meta property="dcterms:modified">{{date}}</meta>
+    <dc:language>en</dc:language>
+</metadata>
+
+<manifest>
+    {{manifest}}
+</manifest>
+
+<spine toc="ncx">
+    {{spine}}
+</spine>
+
+</package>
