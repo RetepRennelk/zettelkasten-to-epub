@@ -21,14 +21,13 @@ def test_md_files_outgoing_link():
     assert "ID3 A note that doesn't exist" in outlinks
 
     outlinks1 = md_files.get_outgoing_links("ID1 Zettelkasten")
-    assert len(outlinks1)==0
+    assert len(outlinks1)==1
 
     outlinks2 = md_files.get_outgoing_links("ID2 Mathematics")
     assert len(outlinks2)==0
 
 def test_id0_index():
     id0_index = """# ID0 Index
-
 - [[ID1 Zettelkasten]]
 - [[ID2 Mathematics]]
 - [[ID3 A note that doesn't exist]]""".split('\n')

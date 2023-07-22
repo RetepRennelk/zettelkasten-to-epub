@@ -1,3 +1,4 @@
-# ID1 Zettelkasten
+# Metadata
 
-A Zettelkasten note
+# Notes
+- [[ID1A Origin of the Zettelkasten]]

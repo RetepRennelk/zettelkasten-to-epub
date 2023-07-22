@@ -64,8 +64,9 @@ def write_container_xml(dirs):
 def write_content_opf(files, dirs):
     cache = []
     stack = [Wikilink(None, "ID0 Index", None)]
-    spine_flag = True
+    nav_flag = True
     manifest_list = []
+    spine_list = []
     while len(stack) > 0:
         head = stack.pop(0)
         if head in cache: continue
@@ -77,22 +78,21 @@ def write_content_opf(files, dirs):
             target_filename, manifest_svg_links, manifest_link = \
                 process_head(head.name, files, target_dir)
             manifest_list.append(manifest_link)
+            spine_list.append(head.name)
             manifest_list += manifest_svg_links
             wikilinks = get_wikilinks(files, head.name) 
             stack = wikilinks + stack
             cache.append(head)
             # gather_outgoing_links(head, wikilinks)
-        if spine_flag:
-            wikilinks = [head] + wikilinks
-            spine_list = make_spine(wikilinks)
-            manifest_link = make_nav(wikilinks, dirs)
+        if nav_flag:
+            manifest_link = make_nav([head] + wikilinks, dirs)
             manifest_list.append(manifest_link)
-            spine_flag = False
+            nav_flag = False
     manifest_link = write_zettel_style_css(dirs)
     manifest_list.append(manifest_link)
     manifest_list += store_assets(dirs)
     manifest = '\n    '.join(manifest_list)
-    spine = '\n    '.join(spine_list)
+    spine = '\n    '.join(make_spine(spine_list))
     date = datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
     template = env.get_template("content.opf")
     f = f"./{dirs['temp']}/{dirs['ops']}/content.opf"
@@ -149,12 +149,12 @@ def get_wikilinks(files, head):
     wikilinks = files.get_wikilinks(head)
     return wikilinks
 
-def make_spine(wikilinks):
-    spine_list = []
-    for wl in wikilinks:
-        wl = dunderfy(wl.name)
-        spine_list.append(f'<itemref idref="{wl}"/>')
-    return spine_list
+def make_spine(spine_list_in):
+    spine_list_out = []
+    for name in spine_list_in:
+        name = dunderfy(name)
+        spine_list_out.append(f'<itemref idref="{name}"/>')
+    return spine_list_out
 
 def make_nav(stack, dirs):
     items = [[f"./xhtml/{dunderfy(el.name)}.xhtml", el.name] for el in stack]

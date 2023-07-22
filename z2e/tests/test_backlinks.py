@@ -8,7 +8,6 @@ files = Files(dirs)
 
 def test_backlinks1():
     ref = """# ID0 Index
-
 - [[ID1 Zettelkasten]]
 - [[ID2 Mathematics]]
 - [[ID3 A note that doesn't exist]]
@@ -19,8 +18,10 @@ None"""
 
 def test_backlinks2():
     ref = """# ID1 Zettelkasten
+## Metadata
 
-A Zettelkasten note
+## Notes
+- [[ID1A Origin of the Zettelkasten]]
 ## Backlinks
 - [[ID0 Index]]"""
     s = '\n'.join(files.get_content('ID1 Zettelkasten'))
@@ -29,6 +30,9 @@ A Zettelkasten note
 
 def test_backlinks3():
     ref = """# ID2 Mathematics
+## Metadata
+
+## Notes
 ## Backlinks
 - [[ID0 Index]]"""
     s = '\n'.join(files.get_content('ID2 Mathematics'))

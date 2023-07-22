@@ -13,8 +13,15 @@ class MD_File:
         self.name = name
         self.path = path
         self.pattern = re.compile("(!)*\\[\\[(.+?)(?:\\]\\]|\\|(.+?)\\]\\])")
+        self.content = [f'# {name}']
         if exists:
-            self.content = readlines(path)
+            self.content += readlines(path)
+            for i, line in enumerate(self.content):
+                if i == 0: continue # Don't indent the title
+                if len(line) > 0 and line[0] == '#':
+                    # Indent all headlines to make room 
+                    # for the filename as main headline
+                    self.content[i] = '#'+line
             self._make_wikilinks()
         self._exists = exists
         self.outgoing_links = []
