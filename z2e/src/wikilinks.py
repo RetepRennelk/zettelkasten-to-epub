@@ -16,7 +16,7 @@ class MD_File:
         if exists:
             self.content = readlines(path)
             self._make_wikilinks()
-        self.exists = exists
+        self._exists = exists
         self.outgoing_links = []
 
     def _make_wikilinks(self):
@@ -27,7 +27,9 @@ class MD_File:
                 self.wikilinks.append(wl)
     
     def get_wikilinks(self):
-        return self.wikilinks
+        if self.exists:
+            return self.wikilinks 
+        return []
 
     def set_outgoing_links(self, outgoing_links):
         self.outgoing_links = outgoing_links
@@ -44,7 +46,9 @@ class MD_File:
 
     def add_backlinks(self):
         if not self.exists:
-            return
+            self.content = [
+                f'# {self.name}',
+                'This Zettel was automatically created.']
         self.content.append("## Backlinks")
         if len(self.incoming_links) == 0:
             self.content.append('None')
@@ -54,6 +58,10 @@ class MD_File:
     
     def get_content(self):
         return self.content
+
+    @property
+    def exists(self):
+        return self._exists
 
 class MD_Files:
     def __init__(self, dirs):
@@ -138,7 +146,9 @@ class AssetsAndNotesLinks:
             return self.assets.wikilink_to_link(wikilink)
         elif sw2:
             return self.notes.wikilink_to_link(wikilink)
-        return f'[[{wikilink}]]'
+        else:
+            #return f'[[{wikilink}]]'
+            return self.notes.wikilink_to_link(wikilink)
     def wikilink_to_path(self, wikilink):
         sw1 = self.assets.wikilink_exists(wikilink)
         sw2 = self.notes.wikilink_exists(wikilink)

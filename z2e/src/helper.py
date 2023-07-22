@@ -69,11 +69,9 @@ def write_content_opf(files, dirs):
     while len(stack) > 0:
         head = stack.pop(0)
         if head in cache: continue
-        #src_path = md_files.get_source_path(head)
         src_path = files.links.wikilink_to_path(head.name)
         if src_path is None:
-            cache.append(head)
-            continue
+            src_path = Path(f'{head.name}.md')
         if src_path.suffix == ".md":
             target_dir = f'{dirs["temp"]}/{dirs["ops"]}/xhtml'
             target_filename, manifest_svg_links, manifest_link = \
