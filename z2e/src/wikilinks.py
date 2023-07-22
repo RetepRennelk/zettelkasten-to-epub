@@ -234,7 +234,9 @@ class Files:
                 current_md_files.append(md_file_tmp)
             md_file.set_outgoing_links(current_md_files)
         for x, y in new_md_files:
-            assert x not in md_files
+            if x in md_files:
+                assert md_files[x].name == y.name
+                continue
             md_files[x] = y
     def _make_incoming_links(self):
         self.incoming_links = defaultdict(list)

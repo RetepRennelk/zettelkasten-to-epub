@@ -16,6 +16,9 @@ epub_title = "PK's Zettelkasten"
 OPF_identifier = "1234567890"
 zettel_style_css = "./css/zettel_style.css"
 
+writestr_cache = []
+write_cache = []
+
 def dunderfy(s):
     return s.replace("_", "__").replace(" ","_")
 
@@ -33,11 +36,19 @@ def readlines(filename):
     return file_content.split("\n")
 
 def writestr(s, target_path):
-    with open(target_path, "w") as f:
-        f.write(s)
+    if target_path in writestr_cache:
+        return
+    else:
+        with open(target_path, "w") as f:
+            f.write(s)
+        writestr_cache.append(target_path)
 
 def write(source_path, target_path):
-    shutil.copy2(source_path, target_path)
+    if (source_path,target_path) in write_cache:
+        return
+    else:
+        shutil.copy2(source_path, target_path)
+        write_cache.append((source_path,target_path))
 
 def prepare_folder_structure(epub_filename, dirs):
     temp_directory = dirs['temp']
