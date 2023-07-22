@@ -1,3 +1,4 @@
 - [[ID1 Zettelkasten]]
 - [[ID2 Mathematics]]
 - [[ID3 A note that doesn't exist]]
+- [[ID4 This zettel links to an image]]

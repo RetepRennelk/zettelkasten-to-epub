@@ -74,9 +74,8 @@ def write_content_opf(files, dirs):
         if src_path is None:
             src_path = Path(f'{head.name}.md')
         if src_path.suffix == ".md":
-            target_dir = f'{dirs["temp"]}/{dirs["ops"]}/xhtml'
             target_filename, manifest_svg_links, manifest_link = \
-                process_head(head.name, files, target_dir)
+                process_head(head.name, files, dirs)
             manifest_list.append(manifest_link)
             spine_list.append(head.name)
             manifest_list += manifest_svg_links
@@ -99,19 +98,22 @@ def write_content_opf(files, dirs):
     s = template.render(date=date,manifest=manifest,spine=spine,OPF_identifier=OPF_identifier)
     writestr(s, f)
 
-def process_head(head, files, target_dir):
+def process_head(head, files, dirs):
     head_stub = dunderfy(head)
     head_md = files.get_content(head)
-    head_xhtml, manifest_svg_links = md_to_xhtml(head_md, head, head_stub, files)
+    head_xhtml, manifest_svg_links = md_to_xhtml(head_md, head, head_stub, files, dirs)
+    target_dir = f'{dirs["temp"]}/{dirs["ops"]}/xhtml'
     target_filename = store_xhtml(head_xhtml, head_stub, target_dir)
     manifest_link = xhtml_to_manifest(head_stub)
     return target_filename, manifest_svg_links, manifest_link
 
-def md_to_xhtml(head_md, head, head_stub, files):
+def md_to_xhtml(head_md, head, head_stub, files, dirs):
     """Syntax: md_to_xhtml(head_md)."""
     pattern = re.compile("(!)*\\[\\[(.+?)(?:\\]\\]|\\|(.+?)\\]\\])")
     xhtml_lst = []
     for line in head_md:
+        if line == '[[circles.jpg]]':
+            breakpoint()
         idx = 0
         lst = []
         for match in pattern.finditer(line):
@@ -119,7 +121,10 @@ def md_to_xhtml(head_md, head, head_stub, files):
             lst.append(line[idx:span[0]])
             if match.group(1) == "!": 
                 assert False, "Implement embedding"
-            link = wikilink_to_link(files, match.group(2))
+            if is_image(match.group(2)):
+                link = handle_image(match.group(2), dirs)
+            else:
+                link = wikilink_to_link(files, match.group(2))
             lst.append(link)
             idx=span[1]
         lst.append(line[idx:])
@@ -188,3 +193,16 @@ def store_assets(dirs):
                 link = f'<item id="{id}" href="{href}" media-type="image/{ext}"/>'
                 manifest_links.append(link)
     return manifest_links
+
+def is_image(name):
+    x = name.lower()
+    return x.endswith('.jpg') or x.endswith('.jpeg') or x.endswith('.png')
+
+def handle_image(name, dirs):
+    template = env.get_template("image_container.xhtml")
+    s = template.render(path=name)
+    target_dir = f"{dirs['temp']}/{dirs['ops']}/{dirs['assets']}/{name}.xhtml"
+    writestr(s, target_dir)
+    target_dir = f"../{dirs['assets']}/{name}.xhtml"
+    link = f'<a href="{target_dir}"> {name} </a>'
+    return link
