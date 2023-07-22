@@ -15,11 +15,12 @@ def test_md_files():
 def test_md_files_outgoing_link():
     outlinks = md_files.get_outgoing_links("ID0 Index")
     outlinks = [x.name for x in outlinks]
-    assert len(outlinks) == 4
+    assert len(outlinks) == 5
     assert "ID1 Zettelkasten" in outlinks
     assert "ID2 Mathematics" in outlinks
     assert "ID3 A note that doesn't exist" in outlinks
     assert "ID4 This zettel links to an image" in outlinks
+    assert "ID5 This zettel embeds an image" in outlinks
 
     outlinks1 = md_files.get_outgoing_links("ID1 Zettelkasten")
     assert len(outlinks1)==1
@@ -32,19 +33,21 @@ def test_id0_index():
 - [[ID1 Zettelkasten]]
 - [[ID2 Mathematics]]
 - [[ID3 A note that doesn't exist]]
-- [[ID4 This zettel links to an image]]""".split('\n')
+- [[ID4 This zettel links to an image]]
+- [[ID5 This zettel embeds an image]]""".split('\n')
     md_file = md_files.md_files['ID0 Index']
 
     for x, y in zip(md_file.content, id0_index):
         assert x==y
 
     out_links = [x.name for x in md_file.get_outgoing_links()]
-    assert len(out_links) == 4
+    assert len(out_links) == 5
 
     assert "ID1 Zettelkasten" in out_links
     assert "ID2 Mathematics" in out_links
     assert "ID3 A note that doesn't exist" in out_links
     assert "ID4 This zettel links to an image" in out_links
+    assert "ID5 This zettel embeds an image" in out_links
 
 def test_md_files_incoming_links():
     inc_links = md_files.get_incoming_links("ID0 Index")

@@ -112,18 +112,17 @@ def md_to_xhtml(head_md, head, head_stub, files, dirs):
     pattern = re.compile("(!)*\\[\\[(.+?)(?:\\]\\]|\\|(.+?)\\]\\])")
     xhtml_lst = []
     for line in head_md:
-        if line == '[[circles.jpg]]':
-            breakpoint()
         idx = 0
         lst = []
         for match in pattern.finditer(line):
             span = match.span()
             lst.append(line[idx:span[0]])
-            if match.group(1) == "!": 
-                assert False, "Implement embedding"
             if is_image(match.group(2)):
-                link = handle_image(match.group(2), dirs)
+                embed = match.group(1) == '!'
+                link = handle_image(match.group(2), dirs, embed)
             else:
+                if match.group(1) == "!": 
+                    assert False, "Implement embedding"
                 link = wikilink_to_link(files, match.group(2))
             lst.append(link)
             idx=span[1]
@@ -198,11 +197,14 @@ def is_image(name):
     x = name.lower()
     return x.endswith('.jpg') or x.endswith('.jpeg') or x.endswith('.png')
 
-def handle_image(name, dirs):
-    template = env.get_template("image_container.xhtml")
-    s = template.render(path=name)
-    target_dir = f"{dirs['temp']}/{dirs['ops']}/{dirs['assets']}/{name}.xhtml"
-    writestr(s, target_dir)
-    target_dir = f"../{dirs['assets']}/{name}.xhtml"
-    link = f'<a href="{target_dir}"> {name} </a>'
+def handle_image(name, dirs, embed):
+    if embed == True:
+        link = f'<img src="../{dirs["assets"]}/{name}">{name}</img>'
+    else:
+        template = env.get_template("image_container.xhtml")
+        s = template.render(path=name)
+        target_dir = f"{dirs['temp']}/{dirs['ops']}/{dirs['assets']}/{name}.xhtml"
+        writestr(s, target_dir)
+        target_dir = f"../{dirs['assets']}/{name}.xhtml"
+        link = f'<a href="{target_dir}"> {name} </a>'
     return link

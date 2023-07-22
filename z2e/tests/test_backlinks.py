@@ -12,6 +12,7 @@ def test_backlinks1():
 - [[ID2 Mathematics]]
 - [[ID3 A note that doesn't exist]]
 - [[ID4 This zettel links to an image]]
+- [[ID5 This zettel embeds an image]]
 ## Backlinks
 None"""
     s = '\n'.join(files.get_content('ID0 Index'))
