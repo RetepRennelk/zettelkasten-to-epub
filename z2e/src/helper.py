@@ -6,6 +6,8 @@ from datetime import datetime
 import markdown
 from .wikilink import Wikilink
 from pathlib import Path
+import uuid
+from .latex2png import latex2png
 
 env = Environment(
     loader=PackageLoader(__name__),
@@ -15,6 +17,7 @@ zettel_template = env.get_template("zettel.xhtml")
 epub_title = "PK's Zettelkasten"
 OPF_identifier = "1234567890"
 zettel_style_css = "./css/zettel_style.css"
+dpi = 150
 
 writestr_cache = []
 write_cache = []
@@ -139,7 +142,8 @@ def md_to_xhtml(head_md, head, head_stub, files, dirs):
             idx=span[1]
         lst.append(line[idx:])
         xhtml_lst.append(''.join(lst))
-    # TODO xhtml_lst, manifest_png_links = math_to_png(xhtml_lst)
+    xhtml_lst, manifest_png_links = math_to_png(xhtml_lst, dirs)
+    # TODO ?
     manifest_png_links = []
     xhtml = md.convert('\n'.join(xhtml_lst))
     return zettel_template.render(
@@ -219,3 +223,28 @@ def handle_image(name, dirs, embed):
         target_dir = f"../{dirs['assets']}/{name}.xhtml"
         link = f'<a href="{target_dir}"> {name} </a>'
     return link
+
+def math_to_png(xhtml_lst, dirs):
+    pattern = re.compile(r'(\${1,2})(.+?)\1')
+    xhtml_lst_out = []
+    manifest_png_links = []
+    for line in xhtml_lst:
+        idx = 0
+        lst = []
+        for match in pattern.finditer(line):
+            span = match.span()
+            lst.append(line[idx:span[0]])
+            if match.group(1) == "!": 
+                assert False, "Implement embedding"
+            png_filename = f'UUID_{str(uuid.uuid4()).replace("-","_")}.png'
+            target_path = f'./{dirs["ops"]}/{dirs["assets"]}/{png_filename}'
+            latex2png(match.group(2), target_path, dpi=dpi)
+            link = f'<img src="../assets/{png_filename}" class="inline_image" style="text-align: left" alt="{png_filename}"></img>'
+            lst.append(link)
+            manifest_png_link = f'<item id="{png_filename}" href="./assets/{png_filename}" media-type="image/svg+xml"/>'
+            manifest_png_links.append(manifest_png_link)
+            idx=span[1]
+        lst.append(line[idx:])
+        xhtml_lst_out.append(''.join(lst))
+    return xhtml_lst_out, manifest_png_links
+
