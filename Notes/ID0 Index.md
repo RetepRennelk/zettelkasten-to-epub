@@ -3,3 +3,4 @@
 - [[ID3 A note that doesn't exist]]
 - [[ID4 This zettel links to an image]]
 - [[ID5 This zettel embeds an image]]
+- [[ID6 Table]]

@@ -56,6 +56,7 @@ class MD_File:
             self.content = [
                 f'# {self.name}',
                 'This Zettel was automatically created.']
+        self.content.append("")
         self.content.append("## Backlinks")
         if len(self.incoming_links) == 0:
             self.content.append('None')

@@ -13,6 +13,8 @@ def test_backlinks1():
 - [[ID3 A note that doesn't exist]]
 - [[ID4 This zettel links to an image]]
 - [[ID5 This zettel embeds an image]]
+- [[ID6 Table]]
+
 ## Backlinks
 None"""
     s = '\n'.join(files.get_content('ID0 Index'))
@@ -24,6 +26,7 @@ def test_backlinks2():
 
 ## Notes
 - [[ID1A Origin of the Zettelkasten]]
+
 ## Backlinks
 - [[ID0 Index]]"""
     s = '\n'.join(files.get_content('ID1 Zettelkasten'))
@@ -31,11 +34,17 @@ def test_backlinks2():
     assert ref==s
 
 def test_backlinks3():
-    ref = """# ID2 Mathematics
+    ref = r"""# ID2 Mathematics
 ## Metadata
 
 ## Notes
+
+$\int x dx=\frac{1}{2}x^2$
+
 ## Backlinks
 - [[ID0 Index]]"""
     s = '\n'.join(files.get_content('ID2 Mathematics'))
+    print(s)
+    print("==================================")
+    print(ref)
     assert ref==s

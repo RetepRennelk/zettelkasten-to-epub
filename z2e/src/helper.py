@@ -12,7 +12,7 @@ from .latex2png import latex2png
 env = Environment(
     loader=PackageLoader(__name__),
     autoescape=select_autoescape())
-md = markdown.Markdown()
+md = markdown.Markdown(extensions=['tables'])
 zettel_template = env.get_template("zettel.xhtml")
 epub_title = "PK's Zettelkasten"
 OPF_identifier = "1234567890"
@@ -143,7 +143,7 @@ def md_to_xhtml(head_md, head, head_stub, files, dirs):
         lst.append(line[idx:])
         xhtml_lst.append(''.join(lst))
     xhtml_lst, manifest_png_links = math_to_png(xhtml_lst, dirs)
-    # TODO ?
+    # TODO Do I need to add images to the manifest?
     manifest_png_links = []
     xhtml = md.convert('\n'.join(xhtml_lst))
     return zettel_template.render(
